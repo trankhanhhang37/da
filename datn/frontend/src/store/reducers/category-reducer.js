@@ -1,9 +1,7 @@
 import { Action } from '../actions'
 
 const initialState = {
-    listCategory: null,
     current_category: null,
-    child_category: null,
     all_category: null
 
 }

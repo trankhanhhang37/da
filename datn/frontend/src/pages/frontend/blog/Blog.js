@@ -64,6 +64,7 @@ function Blog() {
                 : allBlog && allBlog.map((post, index) => {
                   return <PostItem blog={post} key={index} />
                 })
+                
               }
 
             </div>
@@ -96,10 +97,10 @@ function Blog() {
               <p>Donec ullamcorper nulla non metus auctor fringilla. Nulla vitae elit libero, a pharetra augue.</p>
             </div> */}
 
-            <nav class="blog-pagination">
+            {/* <nav class="blog-pagination">
               <a class="btn btn-outline-primary" href="#">Older</a>
               <a class="btn btn-outline-secondary disabled" href="#">Newer</a>
-            </nav>
+            </nav> */}
 
           </div>
 

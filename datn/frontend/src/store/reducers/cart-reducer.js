@@ -17,16 +17,28 @@ const CartReducer = (state = initialState, action) => {
 
         case Action.ADD_CART:
             return {
+                ...state,
+                cart: null
             }
 
         case Action.DELETE_CART:
-            return state
+            return {
+                ...state,
+                cart: action.payload.metaData
+            }
 
         case Action.DELETE_CART_ID:
-            return state
+            localStorage.removeItem("cart_products");
+            return {
+                ...state,
+                cart: null
+            }
 
         case Action.UPDATE_CART:
-            return state
+            return{ ...state,
+            cart: action.payload.metaData
+            }
+
 
         default:
             return state;

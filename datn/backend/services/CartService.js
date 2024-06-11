@@ -27,11 +27,30 @@ class CartService {
         const query = {
             cart_userId: userId,
             'cart_products.productId': productId,
+            'cart_products.sku_id': sku_id,
             cart_state: 'active'
         }, updateSet = {
             $inc: {
                 'cart_products.$.quantity': quantity
             },
+         
+        }, options = {
+            upsert: true,
+            new: true
+        }
+
+        return await cart.findOneAndUpdate(query, updateSet, options)
+    }
+
+    async updateUserCartSku({ userId, product }) {
+
+        const { productId, sku_id, sku_id_old } = product
+        const query = {
+            cart_userId: userId,
+            'cart_products.productId': productId,
+            'cart_products.sku_id': sku_id_old,
+            cart_state: 'active'
+        }, updateSet = {
             $set: {
                 'cart_products.$.sku_id': sku_id
             }
@@ -40,7 +59,7 @@ class CartService {
             new: true
         }
 
-        return await cart.findOneAndUpdate(query, updateSet, options)
+        return await CartModel.findOneAndUpdate(query, updateSet, options)
     }
 
     //end repo cart
@@ -55,6 +74,7 @@ class CartService {
         //neu co cart roi nhung chua co sp
         if (!userCart.cart_products.length) {
             userCart.cart_products = [product]
+            userCart.cart_count_product = userCart.cart_count_product + 1
             return await userCart.save()
         }
         //neu gio hang chua co sp khac 
@@ -63,6 +83,15 @@ class CartService {
         })
         if (!hasProduct) {
             userCart.cart_products = [...userCart.cart_products, product]
+            userCart.cart_count_product = userCart.cart_count_product + 1
+            return await userCart.save()
+        }
+        let hasSkuId = await userCart.cart_products.find((pro) => {
+            return pro.sku_id === product.sku_id
+        })
+        if (hasProduct && !hasSkuId) {
+            userCart.cart_products = [...userCart.cart_products, product]
+            userCart.cart_count_product = userCart.cart_count_product + 1
             return await userCart.save()
         }
         //gio hang ton tai co sp nay => update quantity
@@ -73,7 +102,7 @@ class CartService {
     //update cart trong gio hang
     static async addToCartV2({ userId, shop_order_ids = {} }) {
         // console.log(userId[1].o1[0]+userId[1].o2[1])
-        const { productId, quantity, old_quantity, sku_id } = shop_order_ids?.item_products
+        const { productId, quantity, old_quantity, sku_id, sku_id_old } = shop_order_ids?.item_products
         console.log(shop_order_ids)
         // check sp co ton tai k
         const foundProduct = await getProductById(productId)
@@ -82,41 +111,93 @@ class CartService {
         if (quantity === 0) {
             //deleted
         }
-
-        return await this.updateUserCartQuantity({
-            userId,
-            product: {
-                productId,
-                quantity: quantity - old_quantity,
-                sku_id
-            }
+        if (quantity != old_quantity && sku_id == sku_id_old) {
+            console.log("aa", quantity - old_quantity)
+            return await this.updateUserCartQuantity({
+                userId,
+                product: {
+                    productId,
+                    quantity: quantity - old_quantity,
+                    sku_id
+                }
+            })
+        }
+        const userCart = await CartModel.findOne({ cart_userId: userId })
+        if (!userCart) {
+            return null
+        }
+        let hasSkuId = await userCart.cart_products.find((pro) => {
+            return pro.sku_id === sku_id
         })
-    }
+        if (hasSkuId && sku_id != sku_id_old) {
+            this.deleteToCartItem({ userId: userId, productId: productId, sku_id: sku_id_old })
+            return await this.updateUserCartQuantity({
+                userId,
+                product: {
+                    productId,
+                    quantity: quantity,
+                    sku_id: hasSkuId.sku_id
+                }
+            })
+            // console.log(hasSkuId)
+        }
+        if (sku_id != sku_id_old && quantity == old_quantity) {
+            return await this.updateUserCartSku({
+                userId,
+                product: {
+                    productId,
+                    sku_id,
+                    sku_id_old
+                }
+            })
+        }
+        if (sku_id == sku_id_old && quantity == old_quantity) {
+            return userCart
 
+        }
+        return null
+    }
     //deleted
-    static async deleteCartItem({ userId, productId }) {
-        console.log({ userId, productId })
+    static async deleteCartItem({ userId, productId, sku_id }) {
         const query = {
             cart_userId: userId,
             cart_state: 'active'
         }, updateSet = {
             $pull: {
-                cart_products: { productId }
+                cart_products: { sku_id }
+            },
+            $inc: {
+                cart_count_product: -1
             }
+        }, options = {
+            upsert: true,
+            new: true
         }
 
-        return await cart.updateOne(query, updateSet)
+        return await cart.updateOne(query, updateSet, options)
     }
 
     //
     static async deleteToCartByCartIdAndUserId({ cartId, userId }) {
-        return await cart.deleteOne({ _id: Types.ObjectId(cartId), cart_userId: userId }).lean()
+        return await cart.deleteOne({ _id: Types.ObjectId(cartId), cart_userId: userId, cart_state: cart_state }).lean()
     }
 
     //get list
-    static async getListUserCart({ userId }) {
+    static async getListUserCart({ userId, cart_state='active' }) {
         console.log({ userId })
-        return await cart.findOne({ cart_userId: userId }).lean()
+        return await cart.findOne({ cart_userId: userId, cart_state: cart_state }).lean()
+    }
+
+    async findProductIncartBySkuId({ userId, cart_state = 'active', productId, sku_id }) {
+        return await cart.findOne({
+            cart_userId: userId, cart_state: cart_state, 'cart_products.productId': productId, 'cart_products.sku_id': sku_id
+        }).lean()
+    }
+
+    async getCartById({ CartId, cart_state = 'active' }) {
+        return await CartModel.findOne({
+            _id: Types.ObjectId(CartId), cart_state: cart_state
+        }).lean()
     }
 }
 

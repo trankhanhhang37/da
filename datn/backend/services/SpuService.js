@@ -209,10 +209,6 @@ const findProductDetail = async ({ spu_id, isPublished = true }) => {
     }
 }
 
-
-
-
-
 module.exports = {
     newSpu, oneSpu, isPublishProduct, isUnPublishProduct, isFindProductsByAttributes, isFindProduct,
     isfindAllProducts,

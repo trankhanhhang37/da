@@ -11,6 +11,8 @@ const menuSchema = new Schema({
     menu_slug: String,
     menu_position: { type: String, default: '' },
     isPublished: { type: Boolean, default: true, index: true, select: false },
+    menu_status:  { type: Boolean, default: false, index: true, select: false },
+
 
 
 },

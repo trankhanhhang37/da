@@ -1,3 +1,5 @@
+import { Link } from "react-router-dom";
+
 export default function PostItem({blog}) {
     return (
         <>
@@ -5,14 +7,12 @@ export default function PostItem({blog}) {
                 <div class="card flex-md-row mb-4 box-shadow h-md-250">
                     <div class="card-body d-flex flex-column align-items-start">
                         <strong class="d-inline-block mb-2 text-primary">{blog.blog_name}</strong>
-                        <h3 class="mb-0">
+                        <h5 class="mb-0">
                             <a class="text-dark" href="#">{blog.blog_title}</a>
-                        </h3>
-                        {/* <div class="mb-1 text-muted">Nov 12</div>
-                        <p class="card-text mb-auto">This is a wider card with supporting text below as a natural lead-in to additional content.</p>
-                        <a href="#">Continue reading</a> */}
+                        </h5>
                     </div>
-                    <img class="card-img-right flex-auto d-none d-md-block" style={{width:"50%",height:"50%"}} data-src={blog.blog_image} alt="Card image cap" />
+                    <img class="card-img-right flex-auto d-none d-md-block" style={{width:"50%",height:"90%"}} src={blog.blog_image} alt="Card image cap" />
+                
                 </div>
             </div>
 

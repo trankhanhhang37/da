@@ -1,24 +1,42 @@
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { onProductDetail } from "../../../../store/actions/product-actions";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { NumericFormat } from "react-number-format";
-function ProductDetail() {
+import ProductRelatedItem from "../../../../Components/product/product_related_item";
+import { addCart, addProWishList, removeFromWishList } from "../../../../store/actions";
+import { toast } from 'react-toastify';
+import { addFavoriteToLocalStorage, getFavoritesFromLocalStorage, removeFavoriteFromLocalStorage } from "../../../../utils";
+function ProductDetail({}) {
     const { product_slug_id } = useParams()
     const spu_id = product_slug_id.split("-").pop()
     const dispatch = useDispatch();
+    const navigate = useNavigate();
     const { productDetail } = useSelector((state) => state.productReducer);
+    const { userInfo } = useSelector((state) => state.userReducer);
+    const [favories_products, setfavoriesProduct] = useState(getFavoritesFromLocalStorage)
+
     const [activeTab, setActiveTab] = useState("ex1-pills-1");
-    const [quantity, setQuantity] = useState(1);
     const [largeImageSrc, setLargeImageSrc] = useState(productDetail && productDetail.product_detail.product_thumb[0]);
     const [sku_tier_idx, setSku_tier_idx] = useState([0, 0])
-    const [selected_sku, set_selected_sku] = useState(null)
+
+    const [price, setPrice] = useState('');
+    const [name, setName] = useState('');
+    const [description, setDescription] = useState('');
+    const [stock, setStock] = useState(null);
+    const [selectedImage, setSelectedImage] = useState(null);
+    const [product_detail, setProductDetail] = useState(null);
+    const [product_images, setProductImages] = useState(null);
+    const [selected_sku, set_selected_sku] = useState(null);
+    const [spicial_offer, setSpicial_offer] = useState(null);
+    const [sale_sku, setSale_sku] = useState(null);
+    const [quantity, setQuantity] = useState(1);
+
     const decreaseQuantity = () => {
         if (quantity > 1) {
             setQuantity(quantity - 1);
         }
     };
-
     const increaseQuantity = () => {
         setQuantity(quantity + 1);
     };
@@ -26,6 +44,7 @@ function ProductDetail() {
     const handleTabChange = (tabId) => {
         setActiveTab(tabId);
     };
+
     const changeLargeImage = (newSrc) => {
         setLargeImageSrc(newSrc);
     };
@@ -41,6 +60,53 @@ function ProductDetail() {
         console.log(indexOption, indexVariation)
     }
 
+    ////addtoCart
+    const handleAddToCart = async (userId, { productId, sku_id, quantity }) => {
+        if (userId) {
+            if (quantity <= stock) {
+                // console.log('selected_sku', sku_id + productId + sku_id)
+                await dispatch(
+                    addCart({
+                        userId: userId._id,
+                        product: {
+                            productId: productId,
+                            sku_id: sku_id,
+                            quantity: quantity,
+                        },
+                    })
+                );
+                toast.success('Đã thêm sản phẩm vào giỏ hàng!');
+                // addCartItemToLocalStorage({
+                //     productId: productId,
+                //     sku_id: sku_id,
+                //     quantity: quantity
+                // })
+            }
+        } else {
+            toast.error('Vui lòng đăng nhập để tiếp tục');
+            navigate('/login');
+        }
+    };
+
+    const HandleAddToWishList = async ({ userId, productId }) => {
+        await dispatch(addProWishList({
+            userId: userId,
+            productId: productId
+        }))
+        await addFavoriteToLocalStorage(productId)
+        setfavoriesProduct(getFavoritesFromLocalStorage())
+        toast.success("Đã thêm sản phẩm vào mục yêu thích!")
+    }
+
+    const HandleRemoveFromWishList = async ({ userId, productId }) => {
+        await dispatch(removeFromWishList({
+            userId: userId,
+            productId: productId
+        }))
+        await removeFavoriteFromLocalStorage(productId)
+        setfavoriesProduct(getFavoritesFromLocalStorage())
+        toast.success("Đã xóa sản phẩm ra khỏi mục yêu thích!")
+    }
     useEffect(() => {
         productDetail && (
             !selected_sku && set_selected_sku(productDetail.sku_list.find((sku) => sku.sku_tier_idx.toString() === sku_tier_idx.toString()))
@@ -135,14 +201,7 @@ function ProductDetail() {
                                 <hr />
 
                                 <div className="row mb-4">
-                                    {/* <div className="col-md-4 col-6">
-                                <label className="mb-2">Size</label>
-                                <select className="form-select border border-secondary"  style={{height: '35px'}}>
-                                    <option>Small</option>
-                                    <option>Medium</option>
-                                    <option>Large</option>
-                                </select>
-                            </div> */}
+
                                     {productDetail && productDetail.product_detail.product_variations.map((variation, indexVariation) => {
                                         return (
                                             <div key={indexVariation}>
@@ -151,7 +210,8 @@ function ProductDetail() {
                                                     {variation.options.map((option, indexOption) => {
                                                         return (
                                                             <div key={indexOption} >
-                                                                <input type="radio" class="btn-check" name="options" id={option} autocomplete="off" value={indexOption} onClick={() => onChangeVariation(indexOption, indexVariation)} />
+                                                                <input type="radio" class="btn-check" name="options" id={option} autocomplete="off"
+                                                                    value={indexOption} onClick={() => onChangeVariation(indexOption, indexVariation)} />
                                                                 <label class="btn btn-secondary" for={option} data-mdb-ripple-init>{option}</label>
                                                             </div>
                                                         )
@@ -162,6 +222,7 @@ function ProductDetail() {
                                         )
                                     })}
                                     {/*<!-- col.// --> */}
+
                                     <div className="col-md-4 col-6 mb-3">
                                         <label className="mb-2 d-block">Quantity</label>
                                         <div className="input-group mb-3" style={{ width: '170px' }}>
@@ -180,11 +241,34 @@ function ProductDetail() {
                                                 <i className="fas fa-plus"></i>
                                             </button>
                                         </div>
-                                    </div>                        </div>
-                                <a href="#" className="btn btn-warning shadow-0"> Buy now </a>
-                                <a href="#" className="btn btn-primary shadow-0"> <i className="me-1 fa fa-shopping-basket"></i> Add to cart </a>
-                                <a href="#" className="btn btn-light border border-secondary py-2 icon-hover px-3"> <i className="me-1 fa fa-heart fa-lg"></i> Save </a>
-                            </div>
+                                    </div>
+                                </div>
+                                <button href="#" className="btn btn-warning shadow-0 me-1"> Buy now </button>
+
+                                {productDetail && (selected_sku ?
+                                    (<button className="btn btn-primary shadow-0 me-1"
+                                        onClick={() =>
+                                            handleAddToCart(userInfo, {
+                                                productId:
+                                                productDetail.product_detail._id,
+                                                sku_id: selected_sku._id,
+                                                quantity: quantity,
+                                            })
+                                        }> <i className="me-1 fa fa-shopping-basket"></i> Add to cart </button>)
+                                    :
+                                    (<button disabled className="btn btn-primary shadow-0 me-1"> <i className="me-1 fa fa-shopping-basket"></i> Add to cart </button>
+                                    ))}
+                            {productDetail &&
+                                (userInfo ?
+                                    (
+                                        favories_products.some((p_id) => p_id === productDetail.product_detail._id) == true
+                                            ?
+                                            <button className="btn btn-light border icon-hover  px-2 py-2  " onClick={()=>HandleRemoveFromWishList({userId:userInfo._id , productId:productDetail.product_detail._id})}><i className="fas fa-heart fa-lg text-danger px-1" ></i></button>
+                                            :
+                                            <button className="btn btn-light border icon-hover  px-2 py-2 " onClick={()=>HandleAddToWishList({userId:userInfo._id , productId:productDetail.product_detail._id})}><i className="fas fa-heart fa-lg text-secondary px-1" ></i></button>
+                                    ) : (
+                                        <button className="btn btn-light border icon-hover  px-2 py-2  " ><i className="fas fa-heart fa-lg text-secondary px-1" ></i></button>
+                                    ))}                            </div>
                         </main>
                     </div>
                 </div>
@@ -377,7 +461,13 @@ function ProductDetail() {
                                 <div className="card">
                                     <div className="card-body">
                                         <h5 className="card-title">Similar items</h5>
-                                        <div className="d-flex mb-3">
+                                        {productDetail && productDetail.related_products.map((product, index) => {
+                                            return (
+                                                <ProductRelatedItem key={index} product={product} />
+                                            )
+                                        })}
+
+                                        {/* <div className="d-flex mb-3">
                                             <a href="#" className="me-3">
                                                 <img src="" style={{ minWidth: '96px', height: '96px' }} className="img-md img-thumbnail" />
                                             </a>
@@ -388,9 +478,9 @@ function ProductDetail() {
                                                 </a>
                                                 <strong className="text-dark"> $38.90</strong>
                                             </div>
-                                        </div>
+                                        </div> */}
 
-                                        <div className="d-flex mb-3">
+                                        {/* <div className="d-flex mb-3">
                                             <a href="#" className="me-3">
                                                 <img src="https://bootstrap-ecommerce.com/bootstrap5-ecommerce/images/items/9.webp" style={{ minWidth: '96px', height: '96px' }} className="img-md img-thumbnail" />
                                             </a>
@@ -401,27 +491,9 @@ function ProductDetail() {
                                                 </a>
                                                 <strong className="text-dark"> $29.50</strong>
                                             </div>
-                                        </div>
+                                        </div> */}
 
-                                        <div className="d-flex mb-3">
-                                            <a href="#" className="me-3">
-                                                <img src="https://bootstrap-ecommerce.com/bootstrap5-ecommerce/images/items/10.webp" style={{ minWidth: '96px', height: '96px' }} className="img-md img-thumbnail" />
-                                            </a>
-                                            <div className="info">
-                                                <a href="#" className="nav-link mb-1"> T-shirts with multiple colors, for men and lady </a>
-                                                <strong className="text-dark"> $120.00</strong>
-                                            </div>
-                                        </div>
 
-                                        <div className="d-flex">
-                                            <a href="#" className="me-3">
-                                                <img src="https://bootstrap-ecommerce.com/bootstrap5-ecommerce/images/items/11.webp" style={{ minWidth: '96px', height: '96px' }} className="img-md img-thumbnail" />
-                                            </a>
-                                            <div className="info">
-                                                <a href="#" className="nav-link mb-1"> Blazer Suit Dress Jacket for Men, Blue color </a>
-                                                <strong className="text-dark"> $339.90</strong>
-                                            </div>
-                                        </div>
                                     </div>
                                 </div>
                             </div>

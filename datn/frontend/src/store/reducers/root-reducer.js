@@ -8,6 +8,7 @@ import WishlistReducer from './wishlist-reducer';
 import BlogReducer from './blog-reducer';
 import TopicReducer from './topic-reducer';
 import SliderReducer from './slider-reducer';
+import BrandReducer from './brand-reducer';
 
 
 const reducers = combineReducers({
@@ -19,7 +20,8 @@ const reducers = combineReducers({
     wishlistReducer: WishlistReducer,
     blogReducer: BlogReducer,
     topicReducer: TopicReducer,
-    sliderReducer:SliderReducer
+    sliderReducer:SliderReducer,
+    brandReducer: BrandReducer
 
 
 })

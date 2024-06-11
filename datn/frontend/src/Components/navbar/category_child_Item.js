@@ -1,44 +1,33 @@
 import { useDispatch, useSelector } from "react-redux";
-import { getCategoryByParentId, getChildCategoryByParentId } from "../../store/actions";
+import { getCategoryByParentId } from "../../store/actions";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
-export default function CategoryChildItem({ cat }) {
-    const dispatch = useDispatch();
+export default function CategoryChildItem({ child_category, all_category }) {
 
-    // const { child_category } = useSelector((state) => state.categoryReducer);
+    const [childrent_category, setchild_category] = useState(null);
 
-    const [child_category, setChildCategory] = useState(null);
-
-    const getCategory = async () => {
-        const result = await dispatch(getCategoryByParentId({ sort: 'ctime', parent_id: cat._id }));
-        setChildCategory(result.payload.metaData)
-
+    const getCategoryItem = async () => {
+        setchild_category(all_category.filter((category) => category.parent_id == child_category._id))
     }
-
     useEffect(() => {
-        if (!child_category) {
-            getCategory()
-        }
-    }, [child_category]);
+        getCategoryItem()
+    }, []);
 
     return (
         <>
-            {child_category && child_category.map((category, index) => {
+            {childrent_category && childrent_category.map((category, index) => {
                 return (
                     <>
-                        <div className="col-md border-0" key={index} >
-                            <div className="d-flex flex-column">
-                                <Link to={"/"} className="mb-2  text-center " style={{color:"#004d00"}}  >{category.category_name}</Link>
-                            </div>
+                        <div className="d-flex flex-column ">
+                            <p> {category.category_name}</p>
                         </div>
+
 
                     </>
                 )
 
             }
-
-
             )}
 
         </>

@@ -1,20 +1,66 @@
 import { useDispatch, useSelector } from "react-redux";
-import { onAllProduct } from "../../../store/actions";
+import { AllCategory, getCategoryByParentId, onAllProduct } from "../../../store/actions";
 import ProductListItem from "../../../Components/product/productListItem";
 import { useEffect, useState } from "react";
 import ProductItem from "../../../Components/product/productItem";
+import { getListBrand } from "../../../store/actions/brand-actions";
 
 function Collections() {
   const dispatch = useDispatch();
   const [isList, setIsList] = useState(false)
   const { allProducts } = useSelector((state) => state.productReducer);
+  const { all_brand } = useSelector((state) => state.brandReducer);
+  const { current_category } = useSelector((state) => state.categoryReducer);
+  const {all_category}=useSelector((state)=>state.categoryReducer);
+  const [categoryParentNull, setCategoryParentNull] = useState(null)
+
+
+
+
+  const [categoryCollapsed, setCategoryCollapsed] = useState(false);
+  const [brandCollapsed, setBrandCollapsed] = useState(false);
+  const [priceCollapsed, setPriceCollapsed] = useState(false);
+  const [ratingCollapsed, setRatingCollapsed] = useState(false);
+  const [categoryItem, setCategoryItem]=useState('');
+
+
+
+
+
+  const toggleBrandCollapse = () => {
+    setBrandCollapsed(!brandCollapsed);
+  };
+
+  const toggleCategoryCollapse = () => {
+    setCategoryCollapsed(!categoryCollapsed);
+  };
+
+  const togglePriceCollapse = () => {
+    setPriceCollapsed(!priceCollapsed);
+  };
+
+  const toggleRatingCollapse = () => {
+    setRatingCollapsed(!ratingCollapsed);
+  };
+
 
   useEffect(() => {
     if (!allProducts) {
       dispatch(onAllProduct({ limit: 50, sort: 'ctime', page: 1, filter: { isPublished: true } }));
     }
+    dispatch(getListBrand({ isPublished: true }))
+    dispatch(AllCategory({ isPublished: true }))
+    dispatch(getCategoryByParentId({ parent: null }))
+
+    all_category && (!categoryParentNull && setCategoryParentNull(all_category.filter((category) => category.parent_id == null)))
+    current_category && (!categoryItem && setCategoryItem(current_category.filter((category) => category.parent_id == categoryItem._id)))
+
+
     console.log(allProducts);
   }, [allProducts]);
+
+
+
   return (
     <>
       <section class="">
@@ -39,103 +85,95 @@ function Collections() {
                 <div class="accordion" id="accordionPanelsStayOpenExample">
                   <div class="accordion-item">
                     <h2 class="accordion-header" id="headingOne">
-                      <button
-                        class="accordion-button text-dark bg-light"
-                        type="button"
-                        data-mdb-toggle="collapse"
-                        data-mdb-target="#panelsStayOpen-collapseOne"
-                        aria-expanded="true"
-                        aria-controls="panelsStayOpen-collapseOne"
-                      >
-                        Related items
-                      </button>
+                      {all_category && all_category.map((categoryParentNull, index) => {
+                        if (categoryParentNull.parent_id == null) {
+                          return (<button
+                            className="accordion-button text-dark bg-light"
+                            type="button"
+                            onClick={toggleCategoryCollapse} key={index}
+                          >{categoryParentNull.category_name}</button>)
+                        }
+                      })}
+
                     </h2>
-                    <div id="panelsStayOpen-collapseOne" class="accordion-collapse collapse show" aria-labelledby="headingOne">
+                    <div
+                      id="panelsStayOpen-collapseOne"
+                      className={`collapse ${categoryCollapsed ? "show" : ""}`}
+                      aria-labelledby="headingOne"
+                    >
                       <div class="accordion-body">
-                        <ul class="list-unstyled">
-                          <li><a href="#" class="text-dark">Electronics </a></li>
-                          <li><a href="#" class="text-dark">Home items </a></li>
-                          <li><a href="#" class="text-dark">Books, Magazines </a></li>
-                          <li><a href="#" class="text-dark">Men's clothing </a></li>
-                          <li><a href="#" class="text-dark">Interiors items </a></li>
-                          <li><a href="#" class="text-dark">Underwears </a></li>
-                          <li><a href="#" class="text-dark">Shoes for men </a></li>
-                          <li><a href="#" class="text-dark">Accessories </a></li>
-                        </ul>
+                        <div className="d-flex flex-column justify-content-center align-items-center ">
+                          {current_category && current_category.map((child_category, index1) => {
+                            if (child_category.parent_id == all_category._id) {
+                              return (<li className="" style={{ textTransform: "uppercase" }}key={index1}>
+                                {child_category.category_name}
+                              </li>
+                              )
+                            }
+                          })}
+
+                        </div>
+
+
                       </div>
                     </div>
                   </div>
+
                   <div class="accordion-item">
                     <h2 class="accordion-header" id="headingTwo">
                       <button
-                        class="accordion-button text-dark bg-light"
+                        className="accordion-button text-dark bg-light"
                         type="button"
-                        data-mdb-toggle="collapse"
-                        data-mdb-target="#panelsStayOpen-collapseTwo"
-                        aria-expanded="true"
-                        aria-controls="panelsStayOpen-collapseTwo"
+                        onClick={toggleBrandCollapse}
                       >
-                        Brands
+                        THƯƠNG HIỆU
                       </button>
                     </h2>
-                    <div id="panelsStayOpen-collapseTwo" class="accordion-collapse collapse show" aria-labelledby="headingTwo">
-                      <div class="accordion-body">
+                    <div
+                      id="panelsStayOpen-collapseTwo"
+                      className={`accordion-collapse collapse ${brandCollapsed ? "show" : ""}`}
+                      aria-labelledby="headingTwo"
+                    >                      <div class="accordion-body">
                         <div>
-                          {/*<!-- Checked checkbox -->*/}
-                          <div class="form-check">
+                          {/* <div class="form-check">
                             <input class="form-check-input" type="checkbox" value="" id="flexCheckChecked1" checked />
                             <label class="form-check-label" for="flexCheckChecked1">Mercedes</label>
                             <span class="badge badge-secondary float-end">120</span>
-                          </div>
-                          {/*<!-- Checked checkbox -->*/}
+                          </div> */}
+
                           <div class="form-check">
-                            <input class="form-check-input" type="checkbox" value="" id="flexCheckChecked2" checked />
-                            <label class="form-check-label" for="flexCheckChecked2">Toyota</label>
-                            <span class="badge badge-secondary float-end">15</span>
+                            {all_brand && all_brand.map((brand, index) => {
+                              return (
+                                <div key={index}>
+                                  <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault" />
+                                  <label class="form-check-label" for="flexCheckDefault">{brand.brand_name}</label>
+                                </div>
+
+                              )
+                            })}
+                            {/* <span class="badge badge-secondary float-end">30</span> */}
                           </div>
-                          {/*<!-- Checked checkbox -->*/}
-                          <div class="form-check">
-                            <input class="form-check-input" type="checkbox" value="" id="flexCheckChecked3" checked />
-                            <label class="form-check-label" for="flexCheckChecked3">Mitsubishi</label>
-                            <span class="badge badge-secondary float-end">35</span>
-                          </div>
-                          {/*<!-- Checked checkbox -->*/}
-                          <div class="form-check">
-                            <input class="form-check-input" type="checkbox" value="" id="flexCheckChecked4" checked />
-                            <label class="form-check-label" for="flexCheckChecked4">Nissan</label>
-                            <span class="badge badge-secondary float-end">89</span>
-                          </div>
-                          {/*<!-- Default checkbox -->*/}
-                          <div class="form-check">
-                            <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault" />
-                            <label class="form-check-label" for="flexCheckDefault">Honda</label>
-                            <span class="badge badge-secondary float-end">30</span>
-                          </div>
-                          {/*<!-- Default checkbox -->*/}
-                          <div class="form-check">
-                            <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault" />
-                            <label class="form-check-label" for="flexCheckDefault">Suzuki</label>
-                            <span class="badge badge-secondary float-end">30</span>
-                          </div>
+
                         </div>
                       </div>
                     </div>
                   </div>
+
                   <div class="accordion-item">
                     <h2 class="accordion-header" id="headingThree">
                       <button
-                        class="accordion-button text-dark bg-light"
+                        className="accordion-button text-dark bg-light"
                         type="button"
-                        data-mdb-toggle="collapse"
-                        data-mdb-target="#panelsStayOpen-collapseThree"
-                        aria-expanded="false"
-                        aria-controls="panelsStayOpen-collapseThree"
+                        onClick={togglePriceCollapse}
                       >
-                        Price
+                        KHOẢNG GIÁ
                       </button>
                     </h2>
-                    <div id="panelsStayOpen-collapseThree" class="accordion-collapse collapse show" aria-labelledby="headingThree">
-                      <div class="accordion-body">
+                    <div
+                      id="panelsStayOpen-collapseThree"
+                      className={`accordion-collapse collapse ${priceCollapsed ? "show" : ""}`}
+                      aria-labelledby="headingThree"
+                    >                      <div class="accordion-body">
                         <div class="range">
                           <input type="range" class="form-range" id="customRange1" />
                         </div>
@@ -192,17 +230,18 @@ function Collections() {
                   <div class="accordion-item">
                     <h2 class="accordion-header" id="headingThree">
                       <button
-                        class="accordion-button text-dark bg-light"
+                        className="accordion-button text-dark bg-light"
                         type="button"
-                        data-mdb-toggle="collapse"
-                        data-mdb-target="#panelsStayOpen-collapseFive"
-                        aria-expanded="false"
-                        aria-controls="panelsStayOpen-collapseFive"
+                        onClick={toggleRatingCollapse}
                       >
-                        Ratings
+                        ĐÁNH GIÁ
                       </button>
                     </h2>
-                    <div id="panelsStayOpen-collapseFive" class="accordion-collapse collapse show" aria-labelledby="headingThree">
+                    <div
+                      id="panelsStayOpen-collapseFour"
+                      className={`accordion-collapse collapse ${ratingCollapsed ? "show" : ""}`}
+                      aria-labelledby="headingFour"
+                    >
                       <div class="accordion-body">
                         {/*<!-- Default checkbox -->*/}
                         <div class="form-check">

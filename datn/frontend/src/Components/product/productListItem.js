@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { addProWishList, removeFromWishList } from "../../store/actions";
 import { toast } from "react-toastify";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { addFavoriteToLocalStorage, getFavoritesFromLocalStorage, removeFavoriteFromLocalStorage } from "../../utils";
 
 export default function ProductListItem({ product }) {
@@ -40,11 +40,11 @@ export default function ProductListItem({ product }) {
                         <div class="col-xl-3 col-md-4 d-flex justify-content-center">
                             <div class="bg-image hover-zoom ripple rounded ripple-surface me-md-3 mb-3 mb-md-0">
                                 <img src={product.product_thumb[0]} class="w-100" />
-                                <a href="#!">
+                                <Link to={`/product/${product.product_slug}-${product._id}`}>
                                     <div class="hover-overlay">
                                         <div class="mask" style={{ backgroundColor: 'rgba(253, 253, 253, 0.15)' }}></div>
                                     </div>
-                                </a>
+                                </Link>
                             </div>
                         </div>
                         <div class="col-xl-6 col-md-5 col-sm-7">

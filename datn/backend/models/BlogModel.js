@@ -12,6 +12,7 @@ const blogSchema = new Schema({
     blog_title: String,
     blog_detail: String,
     isPublished: { type: Boolean, default: true, index: true, select: false },
+    blog_status: { type: Boolean, default: true, index: true, select: false }
 
 },
     {

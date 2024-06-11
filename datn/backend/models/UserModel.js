@@ -19,7 +19,8 @@ const userSchema = new Schema({
     user_date_of_birth: { type: Date, default: null },
     user_provider:{type: String, default: ""},
     user_role:{type: String,  default: 'customer', enum: ['admin','customer']},
-    user_status: { type: String, default: 'pending', enum: ['pending', 'active', 'block'] }
+    isPublished: { type: Boolean, default: true, index: true, select: false },
+    user_status:  { type: Boolean, default: false, index: true, select: false },
 },
     {
         timestamps: true,

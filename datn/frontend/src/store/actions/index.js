@@ -7,6 +7,8 @@ export * from './wishlist-actions';
 export * from './topic-actions';
 export * from './blog-actions';
 export * from './slider-actions';
+export * from './brand-actions';
+
 
 
 
@@ -41,7 +43,7 @@ export const Action = {
   GET_CATEGORY_BY_PARENT_ID:"GET_CATEGORY_BY_PARENT_ID",
 
   ///brand
-  GET_BRAND:"GET_BRAND",
+  GET_BRAND_LIST:"GET_BRAND_LIST",
   
   ///info
   GET_INFO:"GET_INFO",

@@ -29,7 +29,7 @@ class CartController {
     }
 
     
-    deleteToCartId = async (req, res, next) => {
+    deleteToCartByCartIdAndUserId = async (req, res, next) => {
 
         return new SuccessResponse({
             message: "deleted cart success",

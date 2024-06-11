@@ -9,7 +9,9 @@ const pageSchema = new Schema({
     page_detail:{type:String, default:''},
     page_slug: String,
     page_type:{type:String, default:''},
-    page_image:{type:String, default:''}
+    page_image:{type:String, default:''},
+    page_status:  { type: Boolean, default: false, index: true, select: false },
+
 
 },
     {

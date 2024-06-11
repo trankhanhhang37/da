@@ -11,6 +11,7 @@ const infoSchema = new Schema({
     info_phone: {type: Number, default:0},
     info_website: { type:String, default:''},
     other_info:{type:String, default:''},
+    info_status:  { type: Boolean, default: false, index: true, select: false },
     isPublished: { type: Boolean, default: false, index: true, select: false },
 
 },

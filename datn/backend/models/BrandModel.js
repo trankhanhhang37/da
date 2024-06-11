@@ -9,6 +9,7 @@ const brandSchema = new Schema({
     brand_image:{ type: Array, default:[]}, 
     brand_slug: String,
     isPublished: { type: Boolean, default: true, index: true, select: false },
+    isDeleted:  { type: Boolean, default: false, index: true, select: false },
 },
     {
         collection: COLLECTION_NAME,
